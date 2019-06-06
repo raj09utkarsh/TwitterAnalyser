@@ -1,10 +1,30 @@
 import tweepy
+import requests
 from textblob import TextBlob
 import numpy as np
 import matplotlib.pyplot as plt
 import Apis
+import json
 # Comment out line 5
 
+
+# If image is present with the current tweet, then this function downloads 
+# the Image and saves it to 'currentFolder/Images' directory
+def photo_extracter(tweet): 
+    try:
+        media_url = tweet.entities['media'][0]['media_url']
+        name      = tweet.entities['media'][0]['id_str']
+
+        r = requests.get(media_url)
+        
+        with open(f"Images/{name}.png", "wb") as f:
+            f.write(r.content)
+
+    except:
+        print('No media found')
+
+
+# Function to analyse tweets
 def func(search_query, n):
     ''' Delete Apis.ConsumerApiKey and Enter your consumer api key '''
     Consumer_Api_Key    = Apis.ConsumerApiKey    
@@ -31,6 +51,8 @@ def func(search_query, n):
 
 
     for tweet in tweets:
+        # print(tweet.entities['media'])
+        photo_extracter(tweet)
         blob = TextBlob(tweet.full_text)
         polarity = blob.sentiment.polarity
         if polarity == 0:
@@ -66,6 +88,6 @@ def func(search_query, n):
 
 
 if __name__ == "__main__":
-    search_query = input("Enter the hashtag you want to search for: ")
+    search_query = input("Enter the hashtag you want to search for (without # keyword): ")
     n = int(input('Enter number of tweets you want to analyse: '))
     func(search_query, n)
